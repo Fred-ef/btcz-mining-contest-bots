@@ -129,5 +129,5 @@ dmypy.json
 .pyre/
 
 # Miscellaneus
-Twitter/results.csv
-Twitter/invalid_results.csv
+Twitter/result_path.csv
+Twitter/invalid_result_path.csv
