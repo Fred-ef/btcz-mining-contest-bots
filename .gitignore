@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Miscellaneus
+./Twitter/results.csv
+./Twitter/invalid_results.csv
