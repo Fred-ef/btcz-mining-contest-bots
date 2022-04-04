@@ -133,24 +133,24 @@ def fetchTweets():
     new_invalid_df = pd.concat([invalid_df, temp_invalid_df], axis=0, join='outer')
 
     # preview print
-    if not new_df.empty:
+    if not temp_df.empty:
         print("########## NEW VALID TWEETS ##########")
-        print(data)
+        print(temp_df)
         print("")
     else:
         print("No new valid tweets\n")
 
     # preview print
-    if not new_invalid_df.empty:
+    if not temp_invalid_df.empty:
         print("########## NEW INVALID TWEETS ##########")
-        print(invalid_data)
+        print(temp_invalid_df)
         print("")
     else:
         print("No new invalid tweets\n")
 
     # creating a dump of the dataframes on file
     new_df.to_csv('result_path.csv', mode='w', index=False)
-    new_invalid_df.to_csv('temp_invalid.csv', mode='w', index=False)
+    new_invalid_df.to_csv('invalid_result_path.csv', mode='w', index=False)
 
 
 # remove rows older than 30 days
@@ -167,7 +167,7 @@ def discardOld():
     new_df = pd.DataFrame(data, columns=columns)
     new_df.to_csv('result_path.csv', mode='w', index=False)
 
-    invalid_df = pd.read_csv('temp_invalid.csv')
+    invalid_df = pd.read_csv('invalid_result_path.csv')
 
     columns = ['TweetID', 'User', 'Address', 'Date', 'Tweet', 'Likes']
     data = []
@@ -177,7 +177,7 @@ def discardOld():
             data.append(row)
     
     new_invalid_df = pd.DataFrame(data, columns=columns)
-    new_invalid_df.to_csv('temp_invalid.csv', mode='w', index=False)
+    new_invalid_df.to_csv('invalid_result_path.csv', mode='w', index=False)
 
 
 # updates the likes of each entry
