@@ -1,16 +1,11 @@
 from asyncio.windows_events import NULL
-from ntpath import join
-from operator import index
-import os
 from datetime import datetime, timedelta
-from pickle import FALSE
-from site import removeduppaths
-from statistics import mode
-import asyncio
+import os
+import re
 import configparser
-import csv
 import tweepy
 import pandas as pd
+import requests
 import pytz
 
 
@@ -36,6 +31,10 @@ days_limit = int(config['settings']['days_limit'])
 addr_len = int(config['settings']['addr_len'])
 result_path = config['settings']['result_path']
 invalid_result_path = config['settings']['invalid_result_path']
+contest_page = config['settings']['contest_page']
+pools = [config['settings']['pool_one'],
+        config['settings']['pool_two'],
+        config['settings']['pool_three']]
 
 # authenticating to Twitter
 auth = tweepy.OAuthHandler(api_key, api_secret)
@@ -66,23 +65,78 @@ def isDateValid(date):
 
 
 # checks if the tweet's format is correct
-def tweetChecker(user, address, text):
+def tweetChecker(user, address, text, page_tagged):
     if not isBTCZFollower(user):
         return False
     if address=="no_addr":
         return False
     if text.count('@') < tags_needed:
         return False
+    if not page_tagged:
+        return False
+    if text.find("via @") != -1:
+        return False
     return True
 
 
 # checks if the entry is duplicate
-def isDuplicate(id, old_df):
+def isDuplicate(id, address, old_df):
     for index, row in old_df.iterrows():
-        if str(row['TweetID'])==str(id):
+        if str(row['TweetID'])==str(id) or str(row['Address'])==address:
             return True
     return False
 
+
+# extracts all links from the text given
+def getLinks(text):
+    links = []
+    tokens = text.split()
+    for token in tokens:
+        if token.find('http') != -1:
+            i = token.find('http')
+            links.append(token[i:])
+    return links
+
+
+# extracts information from the link
+def getLinkContent(link):
+    res = requests.get(link)
+    print(res.url)
+    return res.url
+
+
+# returns, if present, the pool the user is mining on
+def getPool(links):
+    print(links)
+    if not links:
+        return "no_pool"
+    for link in links:
+        url = getLinkContent(link)
+        for pool in pools:
+            if url.find(pool) != -1:
+                return pool
+    return "no_pool"
+
+
+# checks if the contest link has been used
+def checkMainLink(links):
+    if not links:
+        return False
+    for link in links:
+        url = getLinkContent(link)
+        if url.find(contest_page) != -1:
+            return True
+    return False
+
+
+# returns, if present, the partecipant address
+def getAddress(text):
+    tokens = text.split()
+    for token in tokens:
+        i = token.find('t')
+        if i != -1 and (len(token[i:]) == (addr_len)) and re.search('^.[1-9]', token[i:]) and re.search('^[a-zA-Z1-9][^OIl]+$', token[i:]):
+            return token[i:]
+    return "no_addr"
 
 
 # FETCHING method
@@ -95,7 +149,7 @@ def fetchTweets():
     # data frame creation
     df = NULL
     invalid_df = NULL
-    columns = ['TweetID', 'User', 'Address', 'Date', 'Tweet', 'Likes']
+    columns = ['TweetID', 'User', 'Address', 'Date', 'Tweet', 'Likes', 'MainTag']
     data = []
     invalid_data = []
 
@@ -109,26 +163,39 @@ def fetchTweets():
     else:
         invalid_df = pd.read_csv('invalid_result_path.csv')
     
-
+    count = 1
     # selecting only the correctly formatted posts
     for tweet in tweets:
-        address="no_addr"
-            
-        tokens = tweet.full_text.split()
-        for token in tokens:
-            if len(token)==addr_len and token.startswith('t'):
-                address=token
+        print("Checking tweet " + str(count) + ": " + tweet.id_str)
+        count+=1
+        # getting tweet's fields
+        text = tweet.full_text
+        id = tweet.id_str
+        user = tweet.user.screen_name
+        date = tweet.created_at
+        likes = tweet.favorite_count
+
+        # getting row's info
+        links = getLinks(text)
+        page_tagged = checkMainLink(links)
+        address = getAddress(text)
         
-        if tweetChecker(tweet.user.screen_name, address, tweet.full_text):
-            if not isDuplicate(tweet.id_str, df):
-                data.append([tweet.id_str, tweet.user.screen_name, address, tweet.created_at, tweet.full_text, tweet.favorite_count])
+        if tweetChecker(user, address, text, page_tagged):
+            if not isDuplicate(id, address, df):
+                data.append([id, user, address, date, text, likes, page_tagged])
         else:
-            if not isDuplicate(tweet.id_str, invalid_df):
-                invalid_data.append([tweet.id_str, tweet.user.screen_name, address, tweet.created_at, tweet.full_text, tweet.favorite_count])
+            if not isDuplicate(id, address, invalid_df):
+                invalid_data.append([id, user, address, date, text, likes, page_tagged])
     
     # concatenating dataframes
     temp_df = pd.DataFrame(data, columns=columns)
     temp_invalid_df = pd.DataFrame(invalid_data, columns=columns)
+    temp_df.sort_values(by='Likes', ascending=False)
+    temp_invalid_df.sort_values(by='Likes', ascending=False)
+    temp_df.drop_duplicates(subset=['Address'], keep="first", inplace=True)
+    temp_invalid_df.drop_duplicates(subset=['Address'], keep="first", inplace=True)
+    temp_df.sort_values(by='Date', ascending=False)
+    temp_invalid_df.sort_values(by='Date', ascending=False)
     new_df = pd.concat([df, temp_df], axis=0, join='outer')
     new_invalid_df = pd.concat([invalid_df, temp_invalid_df], axis=0, join='outer')
 
