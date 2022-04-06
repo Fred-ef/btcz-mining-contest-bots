@@ -101,7 +101,6 @@ def getLinks(text):
 # extracts information from the link
 def getLinkContent(link):
     res = requests.get(link)
-    print(res.url)
     return res.url
 
 
@@ -166,7 +165,6 @@ def fetchTweets():
     count = 1
     # selecting only the correctly formatted posts
     for tweet in tweets:
-        print("Checking tweet " + str(count) + ": " + tweet.id_str)
         count+=1
         # getting tweet's fields
         text = tweet.full_text
