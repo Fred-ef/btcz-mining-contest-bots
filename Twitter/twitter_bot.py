@@ -152,15 +152,15 @@ def fetchTweets():
     data = []
     invalid_data = []
 
-    if not os.path.exists('result_path.csv'):
+    if not os.path.exists(result_path):
         df = pd.DataFrame(data, columns=columns)
     else:
-        df = pd.read_csv('result_path.csv')
+        df = pd.read_csv(result_path)
     
-    if not os.path.exists('invalid_result_path.csv'):
+    if not os.path.exists(invalid_result_path):
         invalid_df = pd.DataFrame(invalid_data, columns=columns)
     else:
-        invalid_df = pd.read_csv('invalid_result_path.csv')
+        invalid_df = pd.read_csv(invalid_result_path)
     
     count = 1
     # selecting only the correctly formatted posts
@@ -214,13 +214,13 @@ def fetchTweets():
         print("No new invalid tweets\n")
 
     # creating a dump of the dataframes on file
-    new_df.to_csv('result_path.csv', mode='w', index=False)
-    new_invalid_df.to_csv('invalid_result_path.csv', mode='w', index=False)
+    new_df.to_csv(result_path, mode='w', index=False)
+    new_invalid_df.to_csv(invalid_result_path, mode='w', index=False)
 
 
 # remove rows older than 30 days
 def discardOld():
-    df = pd.read_csv('result_path.csv')
+    df = pd.read_csv(result_path)
 
     columns = ['TweetID', 'User', 'Address', 'Date', 'Tweet', 'Likes']
     data = []
@@ -230,9 +230,9 @@ def discardOld():
             data.append(row)
     
     new_df = pd.DataFrame(data, columns=columns)
-    new_df.to_csv('result_path.csv', mode='w', index=False)
+    new_df.to_csv(result_path, mode='w', index=False)
 
-    invalid_df = pd.read_csv('invalid_result_path.csv')
+    invalid_df = pd.read_csv(invalid_result_path)
 
     columns = ['TweetID', 'User', 'Address', 'Date', 'Tweet', 'Likes']
     data = []
@@ -242,24 +242,24 @@ def discardOld():
             data.append(row)
     
     new_invalid_df = pd.DataFrame(data, columns=columns)
-    new_invalid_df.to_csv('invalid_result_path.csv', mode='w', index=False)
+    new_invalid_df.to_csv(invalid_result_path, mode='w', index=False)
 
 
 # updates the likes of each entry
 def updateLikes():
-    df = pd.read_csv('result_path.csv')
+    df = pd.read_csv(result_path)
     for index, row in df.iterrows():
         tweet_id = row['TweetID']
         tweet = api.get_status(tweet_id)
         df.loc[index, 'Likes'] = tweet.favorite_count
-    df.to_csv('result_path.csv', index=False)
+    df.to_csv(result_path, index=False)
 
-    invalid_df = pd.read_csv('invalid_result_path.csv')
+    invalid_df = pd.read_csv(invalid_result_path)
     for index, row in invalid_df.iterrows():
         tweet_id = row['TweetID']
         tweet = api.get_status(tweet_id)
         invalid_df.loc[index, 'Likes'] = tweet.favorite_count
-    invalid_df.to_csv('invalid_result_path.csv', index=False)
+    invalid_df.to_csv(invalid_result_path, index=False)
 
 
 
