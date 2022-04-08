@@ -188,10 +188,6 @@ def fetchTweets():
     # concatenating dataframes
     temp_df = pd.DataFrame(data, columns=columns)
     temp_invalid_df = pd.DataFrame(invalid_data, columns=columns)
-    temp_df.sort_values(by='Likes', ascending=False)
-    temp_invalid_df.sort_values(by='Likes', ascending=False)
-    temp_df.drop_duplicates(subset=['Address'], keep="first", inplace=True)
-    temp_invalid_df.drop_duplicates(subset=['Address'], keep="first", inplace=True)
     temp_df.sort_values(by='Date', ascending=False)
     temp_invalid_df.sort_values(by='Date', ascending=False)
     new_df = pd.concat([df, temp_df], axis=0, join='outer')
