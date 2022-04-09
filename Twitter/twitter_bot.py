@@ -254,21 +254,21 @@ def updateLikes():
             print(e)
     df.to_csv(result_path, index=False)
 
-    invalid_df = pd.read_csv(invalid_result_path)
-    for index, row in invalid_df.iterrows():
-        tweet_id = row['TweetID']
-        try:
-            tweet = api.get_status(tweet_id)
-            invalid_df.loc[index, 'Likes'] = tweet.favorite_count
-        except Exception as e:
-            print(e)
-    invalid_df.to_csv(invalid_result_path, index=False)
+    #invalid_df = pd.read_csv(invalid_result_path)
+    #for index, row in invalid_df.iterrows():
+    #    tweet_id = row['TweetID']
+    #    try:
+    #        tweet = api.get_status(tweet_id)
+    #        invalid_df.loc[index, 'Likes'] = tweet.favorite_count
+    #    except Exception as e:
+    #        print(e)
+    #invalid_df.to_csv(invalid_result_path, index=False)
 
 
 
 ### MAIN ###
-#fetchTweets()
-#discardOld()
+fetchTweets()
+discardOld()
 updateLikes()
 
 
