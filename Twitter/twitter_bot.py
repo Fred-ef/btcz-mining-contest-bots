@@ -99,9 +99,10 @@ def getLinks(text):
 
 
 # extracts information from the link
-def getLinkContent(link):
-    res = requests.get(link)
-    return res.url
+def getLinkLocation(link):
+    res = requests.get(link, allow_redirects=False)
+    print(str(res.status_code)+" "+str(res.headers["location"]))
+    return res.headers["location"]
 
 
 # returns, if present, the pool the user is mining on
@@ -110,7 +111,7 @@ def getPool(links):
     if not links:
         return "no_pool"
     for link in links:
-        url = getLinkContent(link)
+        url = getLinkLocation(link)
         for pool in pools:
             if url.find(pool) != -1:
                 return pool
@@ -122,7 +123,7 @@ def checkMainLink(links):
     if not links:
         return False
     for link in links:
-        url = getLinkContent(link)
+        url = getLinkLocation(link)
         if url.find(contest_page) != -1:
             return True
     return False
