@@ -80,9 +80,9 @@ def tweetChecker(user, address, text, page_tagged):
 
 
 # checks if the entry is duplicate
-def isDuplicate(id, address, old_df):
+def isDuplicate(id, old_df):
     for index, row in old_df.iterrows():
-        if str(row['TweetID'])==str(id) or str(row['Address'])==address:
+        if str(row['TweetID'])==str(id):
             return True
     return False
 
@@ -179,10 +179,10 @@ def fetchTweets():
         address = getAddress(text)
         
         if tweetChecker(user, address, text, page_tagged):
-            if not isDuplicate(id, address, df):
+            if not isDuplicate(id, df):
                 data.append([id, user, address, date, text, likes, page_tagged])
         else:
-            if not isDuplicate(id, address, invalid_df):
+            if not isDuplicate(id, invalid_df):
                 invalid_data.append([id, user, address, date, text, likes, page_tagged])
     
     # concatenating dataframes
