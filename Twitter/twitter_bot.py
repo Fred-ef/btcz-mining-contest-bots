@@ -271,7 +271,7 @@ def getUTCString(dayOffset=0,delimiter="."):
 
 def exportTodayLikes():
     df = pd.read_csv(result_path)
-    today_df = df.drop(['Date', 'Tweet'], axis=1)
+    today_df = df.drop('Tweet', axis=1)
     today_df.to_csv(daily_result_path+getUTCString()+".csv", mode='w', index=False)
 
 
