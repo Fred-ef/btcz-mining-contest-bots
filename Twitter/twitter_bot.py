@@ -30,6 +30,7 @@ tags_needed = int(config['settings']['tags_needed'])
 days_limit = int(config['settings']['days_limit'])
 addr_len = int(config['settings']['addr_len'])
 result_path = config['settings']['result_path']
+daily_result_path = config['settings']['daily_result_path']
 invalid_result_path = config['settings']['invalid_result_path']
 contest_page = config['settings']['contest_page']
 pools = [config['settings']['pool_one'],
@@ -94,7 +95,7 @@ def getLinks(text):
     for token in tokens:
         if token.find('http') != -1:
             i = token.find('http')
-            links.append(token[i:])
+            links.append(token[i:i+23])
     return links
 
 
@@ -264,6 +265,15 @@ def updateLikes():
     #        print(e)
     #invalid_df.to_csv(invalid_result_path, index=False)
 
+def getUTCString(dayOffset=0,delimiter="."):
+    now = datetime.utcnow() + timedelta(days=dayOffset) 
+    return str('{:04d}'.format(now.year))+delimiter+str('{:02d}'.format(now.month))+delimiter+str('{:02d}'.format(now.day))
+
+def exportTodayLikes():
+    df = pd.read_csv(result_path)
+    today_df = df.drop(['Date', 'Tweet'], axis=1)
+    today_df.to_csv(daily_result_path+getUTCString()+".csv", mode='w', index=False)
+
 
 
 ### MAIN ###
@@ -271,5 +281,6 @@ fetchTweets()
 discardOld()
 updateLikes()
 
+exportTodayLikes()
 
 ### END ###
