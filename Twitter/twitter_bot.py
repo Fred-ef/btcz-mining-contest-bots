@@ -252,7 +252,7 @@ def updateLikes():
             tweet = api.get_status(tweet_id)
             df.loc[index, 'Likes'] = tweet.favorite_count
         except Exception as e:
-            print(e)
+            print(str(tweet_id)+": "+str(e))
     df.to_csv(result_path, index=False)
 
     #invalid_df = pd.read_csv(invalid_result_path)
@@ -277,10 +277,13 @@ def exportTodayLikes():
 
 
 ### MAIN ###
+print("fetchTweets")
 fetchTweets()
+print("discardOld")
 discardOld()
+print("updateLikes")
 updateLikes()
-
+print("exportTodayLikes")
 exportTodayLikes()
 
 ### END ###
