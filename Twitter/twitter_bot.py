@@ -275,15 +275,17 @@ def exportTodayLikes():
     today_df.to_csv(daily_result_path+getUTCString()+".csv", mode='w', index=False)
 
 
+def main():
+    ### MAIN ###
+    print("fetchTweets")
+    fetchTweets()
+    print("discardOld")
+    discardOld()
+    print("updateLikes")
+    updateLikes()
+    print("exportTodayLikes")
+    exportTodayLikes()
+    ### END ###
 
-### MAIN ###
-print("fetchTweets")
-fetchTweets()
-print("discardOld")
-discardOld()
-print("updateLikes")
-updateLikes()
-print("exportTodayLikes")
-exportTodayLikes()
-
-### END ###
+if __name__ == "__main__":
+    main()
