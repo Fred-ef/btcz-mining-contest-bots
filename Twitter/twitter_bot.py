@@ -8,7 +8,7 @@ import pandas as pd
 import requests
 import pytz
 
-
+import base58
 
 ### CONFIG INFO #####
 
@@ -131,13 +131,25 @@ def checkMainLink(links):
 
 
 # returns, if present, the partecipant address
-def getAddress(text):
+def getAddressOld(text):
     tokens = text.split()
     for token in tokens:
         i = token.find('t')
         if i != -1 and (len(token[i:]) == (addr_len)) and re.search('^.[1-9]', token[i:]) and re.search('^[a-zA-Z1-9][^OIl]+$', token[i:]):
             return token[i:]
     return "no_addr"
+
+def getAddress(text):
+    index=-1
+    while True:
+        index=text.find("t",index+1)
+        if index==-1:
+            return "no_addr"
+        if (len(text[index:]) >= (addr_len)):
+            token=text[index:index+addr_len]
+            if base58.validAddress(token):
+                return token
+
 
 
 # FETCHING method
