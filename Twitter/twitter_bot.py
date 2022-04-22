@@ -265,6 +265,11 @@ def updateLikes():
             df.loc[index, 'Likes'] = tweet.favorite_count
         except Exception as e:
             print(str(tweet_id)+": "+str(e))
+            if str(e).find('63 -') != -1: #63 - User has been suspended.
+                df.loc[index, 'Likes'] = -1
+            elif str(e).find('144 -') != -1: #144 - No status found with that ID.
+                df.loc[index, 'Likes'] = -1 
+
     df.to_csv(result_path, index=False)
 
     #invalid_df = pd.read_csv(invalid_result_path)
