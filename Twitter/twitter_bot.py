@@ -269,6 +269,8 @@ def updateLikes():
                 df.loc[index, 'Likes'] = -1
             elif str(e).find('144 -') != -1: #144 - No status found with that ID.
                 df.loc[index, 'Likes'] = -1 
+            elif str(e).find('179 -') != -1: #179 - Sorry, you are not authorized to see this status.
+                df.loc[index, 'Likes'] = -1 
 
     df.to_csv(result_path, index=False)
 
